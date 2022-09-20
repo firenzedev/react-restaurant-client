@@ -4,7 +4,7 @@ import CreateReview from "../Review/CreateReview";
 import ViewRestaurantDetail from "./ViewRestaurantDetail";
 
 export default function Restaurant({ restaurant }) {
-  const { name, rating, address, city, numberOfReviews, id } = restaurant;
+  const { name, rating, address, city, numberOfReviews } = restaurant;
   return (
     <div className="max-w-xs shadow-md mb-6">
       <div className="w-full h-32">
