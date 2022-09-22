@@ -7,30 +7,18 @@ const httpLink = new HttpLink({
   uri: "https://nodejs-restaurant-server.herokuapp.com/graphql",
 });
 
-const wsLink =
-  typeof window !== "undefined"
-    ? new GraphQLWsLink(
-        createClient({
-          url: "wss://nodejs-restaurant-server.herokuapp.com/subscriptions",
-        })
-      )
-    : null;
-
+const wsLink = isServerSide()
+  ? new GraphQLWsLink(
+      createClient({
+        url: "wss://nodejs-restaurant-server.herokuapp.com/subscriptions",
+      })
+    )
+  : null;
 
 const link =
-    typeof window !== "undefined" && wsLink != null
-        ? split(
-                ({ query }) => {
-                    const def = getMainDefinition(query);
-                    return (
-                        def.kind === "OperationDefinition" &&
-                        def.operation === "subscription"
-                    );
-                },
-                wsLink,
-                httpLink
-          )
-        : httpLink;
+  isServerSide() && wsLink != null
+    ? split(splitRule, wsLink, httpLink)
+    : httpLink;
 
 const client = new ApolloClient({
   link: link,
@@ -38,3 +26,15 @@ const client = new ApolloClient({
 });
 
 export default client;
+
+function isServerSide() {
+  return typeof window !== "undefined";
+}
+
+function splitRule({ query }) {
+  const definition = getMainDefinition(query);
+  return (
+    definition.kind === "OperationDefinition" &&
+    definition.operation === "subscription"
+  );
+}
